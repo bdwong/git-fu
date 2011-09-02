@@ -4,7 +4,7 @@ class GitFu
   attr_accessor :score, :usage, :unique
 
   NORMALIZED_SCORE = 100.0
-  #@@debug=true
+  @@debug=false
   
   # [ score n per unique argument set, score n * count ]
   @@cmd_scores = { 
