@@ -6,18 +6,18 @@ class GitFu
   NORMALIZED_SCORE = 100.0
   @@debug=false
   
-  # [ score n per unique argument set, score n * count ]
+  # score [ for first use, per unique argument set, per use ]
   @@cmd_scores = { 
     "HEAD" => [30,10,0],
     "Update" => [5,0,0],
     "checkout" => [10,0,1],
-    "cherry-pick" => [20,0,30],
+    "cherry-pick" => [30,0,20],
     "clone" => [20,0,0],
     "commit" => [-80,80,1],
     "merge" => [20,10,6],
     "pull" => [0,20,2],
     "rebase" => [100,0,20],
-    :hash => [0,10,0],
+    :hash => [20,10,0],
     :branch => [0,10,1],
     :other => [0,0,15]
   }
