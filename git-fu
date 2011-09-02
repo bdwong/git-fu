@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 class GitFu
-  attr :score, :usage, :unique
+  attr_accessor :score, :usage, :unique
 
   NORMALIZED_SCORE = 100.0
   #@@debug=true
