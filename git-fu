@@ -7,7 +7,7 @@ class GitFu
   #@@debug=true
   
   # [ score n per unique argument set, score n * count ]
-  @@cmd_scores = { "HEAD"=>[10,10,0], "Update"=>[5,0,0], "checkout"=>[10,0,1], "cherry-pick"=>[0,0,30], "clone"=>[20,0,0], "commit"=>[-80,80,1], "merge"=>[10,10,6], "pull"=>[20,0,2], "rebase" => [100,0,20],
+  @@cmd_scores = { "HEAD"=>[30,10,0], "Update"=>[5,0,0], "checkout"=>[10,0,1], "cherry-pick"=>[20,0,30], "clone"=>[20,0,0], "commit"=>[-80,80,1], "merge"=>[20,10,6], "pull"=>[0,20,2], "rebase" => [100,0,20],
   :hash=>[0,10,0], :branch=>[0,10,1], :other=>[0,0,15]
   } 
 
