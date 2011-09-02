@@ -79,8 +79,8 @@ class GitFu
   
   def get_score(usage)
     score=0.0
+    factor = normal_factor
     @usage.each do |cmd, count|
-      factor = normal_factor
       if @@cmd_scores.has_key?(cmd)
         a = first_use_score(cmd)
         b = unique_args_score(cmd)
