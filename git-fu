@@ -1,0 +1,106 @@
+#!/usr/bin/env ruby
+
+class GitFu
+  attr :score, :usage, :unique
+
+  NORMALIZED_SCORE = 100.0
+  
+  # [ score n per unique argument set, score n * count ]
+  @@cmd_scores = { "HEAD"=>[10,10,0], "Update"=>[5,0,0], "checkout"=>[10,0,1], "cherry-pick"=>[0,0,30], "clone"=>[20,0,0], "commit"=>[0,80,1], "merge"=>[10,10,6], "pull"=>[20,0,2], "rebase" => [100,0,20],
+  :hash=>[0,10,0], :branch=>[0,10,1], :other=>[0,0,15]
+  } 
+
+  def initialize
+    @usage = Hash.new(0)
+    @unique = Hash.new(0)
+    @score = 0
+  end
+
+  def break_up(str)
+    str.match(/^\s*(\d+)\s+([\/0-9A-Za-z_-]+)\s*(.*)/)[1..3]
+  end
+    
+  def usage_hash(input=nil)
+    usage = Hash.new(0)
+    input ||= STDIN
+    input.each do |line|
+      count, cmd, args = break_up(line)
+      count = count.to_i
+      
+      #puts "#{line}"
+      #puts " '#{count}' '#{cmd}'"
+      if cmd.length == 40
+        @usage[:hash]+=count
+        @unique[:hash]+=1
+      elsif @@cmd_scores.has_key?(cmd)
+        @usage[cmd]+=count
+        @unique[cmd]+=1
+      elsif args.empty?
+        @usage[:branch]+=count
+        @unique[:branch]+=1
+      else
+        # No idea what this is... but it has arguments, so it must be git-fu.
+        puts "Unknown command #{cmd}, using default score"
+        @usage[:other]+=count
+        @unique[:other]+=1
+      end
+    end
+    @usage
+  end
+  
+  def per_use_score(cmd)
+    count_index = 2
+    @@cmd_scores[cmd][count_index] * @usage[cmd]
+  end
+  
+  def first_use_score(cmd)
+    unique_index = 0
+    @@cmd_scores[cmd][unique_index]
+  end
+  
+  def unique_args_score(cmd)
+    unique_args_index = 1
+    @@cmd_scores[cmd][unique_args_index] * @unique[cmd]
+  end
+  
+  # Counting scores are normalized against the checkout + commit score.
+  def normal_factor
+    begin
+      d = NORMALIZED_SCORE / (per_use_score("checkout") + per_use_score("commit")).to_f
+      if d == 1.0/0.0
+        1.0
+      else
+        d
+      end
+    rescue ZeroDivisionError
+      1.0
+    end
+  end
+  
+  def get_score(usage)
+    score=0.0
+    @usage.each do |cmd, count|
+      factor = normal_factor
+      if @@cmd_scores.has_key?(cmd)
+        a = first_use_score(cmd)
+        b = unique_args_score(cmd)
+        c = per_use_score(cmd)
+        d = c * factor
+        #puts "#{cmd}:\t #{a} #{b} (#{c}) #{d.to_i}"
+        score += a + b + d
+      end
+    end
+    @score = score
+  end
+  
+  def calculate(input=nil)
+    get_score(usage_hash(input))
+  end
+end
+
+if $0 == __FILE__
+  input = `git reflog|cut -f2 -d':'|sort|uniq -c`.split("\n")
+  g = GitFu.new
+  g.calculate(input)
+  puts "Your git-fu: #{g.score.to_i}"
+end
