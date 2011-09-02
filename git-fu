@@ -4,6 +4,7 @@ class GitFu
   attr :score, :usage, :unique
 
   NORMALIZED_SCORE = 100.0
+  #@@debug=true
   
   # [ score n per unique argument set, score n * count ]
   @@cmd_scores = { "HEAD"=>[10,10,0], "Update"=>[5,0,0], "checkout"=>[10,0,1], "cherry-pick"=>[0,0,30], "clone"=>[20,0,0], "commit"=>[-80,80,1], "merge"=>[10,10,6], "pull"=>[20,0,2], "rebase" => [100,0,20],
@@ -28,7 +29,7 @@ class GitFu
       count = count.to_i
       
       #puts "#{line}"
-      #puts " '#{count}' '#{cmd}'"
+      puts " '%5d' '%s' '%s'" % [count, cmd, args] if @@debug
       if cmd.length == 40
         @usage[:hash]+=count
         @unique[:hash]+=1
@@ -86,7 +87,7 @@ class GitFu
         b = unique_args_score(cmd)
         c = per_use_score(cmd)
         d = c * factor
-        #puts "#{cmd}:\t #{a} #{b} (#{c}) #{d.to_i}"
+        puts "%-10s: %5d %5d (%5d) %5d" % [cmd, a, b, c, d.to_i] if @@debug
         score += a + b + d
       end
     end
