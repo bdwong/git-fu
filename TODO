@@ -1,7 +1,5 @@
 TOO:
 
-- Allow passing in a path to a git repository
-- Option -v to show calculation details.
 - Use Ruby methods instead of cut|sort|uniq
-- Option -h for help or invalid arguments
-
+- Add random tips based on commands used and current score.
+- More balanced scoring
