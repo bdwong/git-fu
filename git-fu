@@ -1,7 +1,9 @@
 #!/usr/bin/env ruby
+require 'optparse'
+require 'ostruct'
 
 class GitFu
-  attr_accessor :score, :usage, :unique
+  attr_accessor :score, :usage, :unique, :opts
 
   NORMALIZED_SCORE = 100.0
   @@debug=false
@@ -22,10 +24,11 @@ class GitFu
     :other => [0,0,15]
   }
 
-  def initialize
+  def initialize(opt)
     @usage = Hash.new(0)
     @unique = Hash.new(0)
     @score = 0
+    @opts = opt
   end
 
   def break_up(str)
@@ -98,7 +101,7 @@ class GitFu
         b = unique_args_score(cmd)
         c = per_use_score(cmd)
         d = c * factor
-        puts "%-10s: %5d %5d (%5d) %5d" % [cmd, a, b, c, d.to_i] if @@debug
+        puts "%-10s: %5d %5d (%5d) %5d" % [cmd, a, b, c, d.to_i] if opts.verbose
         score += a + b + d
       end
     end
@@ -108,11 +111,47 @@ class GitFu
   def calculate(input=nil)
     get_score(usage_hash(input))
   end
+  
+  def self.parse
+    options = OpenStruct.new
+    options.verbose = false
+    
+    opts = OptionParser.new do |opts|
+      opts.banner = "Usage: git-fu [options] [path-to-git-repository]"
+  
+      opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
+        options.verbose = v
+      end
+      
+      opts.on_tail("-h", "--help", "Show this message") do
+          puts opts
+          exit
+        end      
+    end
+    
+    opts.parse!
+    options.path = ARGV.first || '.'
+    if ARGV.size > 1
+      puts "Can't specify more than one git repository."
+      puts opts.help
+      exit 1
+    end
+    if not File.directory?(options.path) or not File.exists?(File.join(options.path, ".git"))
+      puts "#{options.path} is not a git repository."
+      puts opts.help
+      exit 1
+    end
+
+    puts options.inspect if @@debug
+    options
+  end
 end
 
 if $0 == __FILE__
+  opt=GitFu.parse
+  g = GitFu.new(opt)
+  Dir.chdir(opt.path)
   input = `git reflog|cut -f2 -d':'|sort|uniq -c`.split("\n")
-  g = GitFu.new
   g.calculate(input)
   puts "Your git-fu: #{g.score.to_i}"
 end
